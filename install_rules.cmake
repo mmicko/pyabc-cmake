@@ -3,7 +3,7 @@ string(RANDOM RANDOM_SEED 0 "__dummy_random__")
 
 include(CMakeParseArguments)
 
-find_package(PythonInterp 2.7 REQUIRED)
+find_package(PythonInterp 3 REQUIRED)
 find_package(Git REQUIRED)
 
 
@@ -59,7 +59,6 @@ function(install_python_requirements file)
             ${PYTHON_EXECUTABLE} -m pip install
                 --compile
                 --requirement ${requirements_file} 
-                --system
                 --target \${CMAKE_INSTALL_PREFIX}/lib
     )
 endfunction()
@@ -101,7 +100,7 @@ _pyabc_install_execute_process(
 
 _pyabc_install_execute_process(
     COMMAND
-        bash -c "${GIT_EXECUTABLE} submodule--helper list \>\> \${CMAKE_INSTALL_PREFIX}/VERSION.txt"
+        bash -c "${GIT_EXECUTABLE} submodule status \>\> \${CMAKE_INSTALL_PREFIX}/VERSION.txt"
     WORKING_DIRECTORY
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -143,7 +142,7 @@ function(_pyabc_install_python_library dest)
 
     execute_process(
         COMMAND
-            ${PYTHON_EXECUTABLE} -c "import sys; sys.stdout.write('%s/lib/python%s/'%(sys.prefix,sys.version[:3]))"
+            ${PYTHON_EXECUTABLE} -c "import sys, sysconfig; sys.stdout.write(sysconfig.get_path('stdlib') + '/')"
         OUTPUT_VARIABLE
             lib_dir
     )
@@ -155,7 +154,7 @@ function(_pyabc_install_python_library dest)
 
     execute_process(
         COMMAND
-            ${PYTHON_EXECUTABLE} -c "import sys; sys.stdout.write('%s/lib/python%s/lib-dynload'%(sys.exec_prefix,sys.version[:3]))"
+            ${PYTHON_EXECUTABLE} -c "import sys, sysconfig; sys.stdout.write(sysconfig.get_path('platstdlib') + '/lib-dynload')"
         OUTPUT_VARIABLE
             dylib_dir
     )
